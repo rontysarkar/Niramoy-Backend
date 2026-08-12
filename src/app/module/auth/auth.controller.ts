@@ -4,9 +4,13 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
+import z from "zod";
+
+
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
+  console.log("Controller Payload",payload)
   const result = await AuthService.registerPatient(payload);
 
   const { accessToken, refreshToken, user, patient } = result;
