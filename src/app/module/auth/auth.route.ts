@@ -2,7 +2,6 @@ import { NextFunction, Request, Response, Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middleware/checkAuth";
 import { AuthController } from "./auth.controller";
-import z from "zod";
 import { validateRequest } from "../../middleware/validateRequest";
 import { UserValidation } from "./auth.validation";
 
@@ -25,5 +24,7 @@ router.get(
 );
 router.post("/refresh-token", AuthController.refreshToken);
 router.post("/google", AuthController.googleLogin);
+
+
 
 export const AuthRoutes = router;

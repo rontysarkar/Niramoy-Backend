@@ -46,3 +46,87 @@ export const seedSuperAdmin = async () => {
     });
   }
 };
+
+export const seedTestAdmin = async () => {
+  try {
+    const name = config.test_admin_name;
+    const email = config.test_admin_email;
+    const password = config.test_admin_password;
+
+    const isExistsTestAdmin = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (isExistsTestAdmin) {
+      console.log("Test Admin Already Exists");
+      return;
+    }
+
+    const hashPassword = await bcrypt.hash(
+      password,
+      Number(config.bcrypt_salt_rounds),
+    );
+
+    const testAdmin = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashPassword,
+        emailVerified: true,
+        role: Role.ADMIN,
+      },
+    });
+
+    console.log("Test Admin Created :", testAdmin);
+  } catch (error) {
+    console.log("Seeding Test Admin Error:", error);
+    await prisma.user.delete({
+      where: {
+        email: config.test_admin_email,
+      },
+    });
+  }
+};
+
+export const seedTestDoctor = async () => {
+  try {
+    const name = config.test_doctor_name;
+    const email = config.test_doctor_email;
+    const password = config.test_doctor_password;
+
+    const isExistsTestDoctor = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (isExistsTestDoctor) {
+      console.log("Test Doctor Already Exists ");
+      return;
+    }
+    const hashPassword = await bcrypt.hash(
+      password,
+      Number(config.bcrypt_salt_rounds),
+    );
+    const testDoctor = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashPassword,
+        emailVerified: true,
+        role: Role.DOCTOR,
+      },
+    });
+
+    console.log("Test Doctor Created :", testDoctor);
+  } catch (error) {
+    console.log("Seeding Test Doctor Error:", error);
+    await prisma.user.delete({
+      where: {
+        email: config.test_doctor_email,
+      },
+    });
+  }
+};
