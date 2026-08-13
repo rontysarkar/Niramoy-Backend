@@ -24,6 +24,8 @@ router.get(
 );
 router.post("/refresh-token", AuthController.refreshToken);
 router.post("/google", AuthController.googleLogin);
+router.post('/forgot-password',validateRequest(UserValidation.ForgotPasswordSchema),AuthController.forgotPassword);
+router.post('/reset-password',validateRequest(UserValidation.ResetPasswordSchema),AuthController.resetPassword)
 
 
 

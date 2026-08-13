@@ -18,6 +18,16 @@ export interface IRequestUser {
     role: Role
 }
 
+export interface IForgotPasswordPayload {
+    email:string
+}
+
+export interface IResetPasswordPayload {
+    otp:string,
+    email:string,
+    newPassword:string,
+}
+
 export interface googleLoginPayload {
     idToken:string
 }

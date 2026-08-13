@@ -7,7 +7,8 @@ export const validateRequest = (zodSchema: z.ZodObject) => {
     const body = req.body;
     const result = zodSchema.safeParse(body);
     if (!result.success) {
-      throw new Error(result.error.issues[0].message);
+      const message = `${result.error.issues[0].path[0] as string} ${result.error.issues[0].message}`;
+      throw new Error(message);
     }
 
     req.body = result.data;

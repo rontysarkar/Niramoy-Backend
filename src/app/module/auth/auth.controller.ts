@@ -6,11 +6,9 @@ import { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 import z from "zod";
 
-
-
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-  console.log("Controller Payload",payload)
+  console.log("Controller Payload", payload);
   const result = await AuthService.registerPatient(payload);
 
   const { accessToken, refreshToken, user, patient } = result;
@@ -146,10 +144,36 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const result = await AuthService.forgotPassword(payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "otp Send your email please check",
+    data: {},
+  });
+});
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const result = await AuthService.resetPassword(payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password Reset Successfully",
+    data: {},
+  });
+});
+
 export const AuthController = {
   registerPatient,
   loginUser,
   getMe,
   refreshToken,
   googleLogin,
+  forgotPassword,
+  resetPassword
+  
 };

@@ -10,11 +10,15 @@ import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import {
   googleLoginPayload,
+  IForgotPasswordPayload,
   ILoginUserPayload,
   IRegisterPatientPayload,
   IRequestUser,
+  IResetPasswordPayload,
 } from "./auth.interface";
 import { googleClient } from "../../lib/google-auth";
+import crypto from "crypto";
+import { redisClient } from "../../lib/redis";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
   const { name, password } = payload;
@@ -239,7 +243,6 @@ const googleLogin = async (payload: googleLoginPayload) => {
 
   let user = ifExistWithGoogle;
 
-
   if (!ifExistWithGoogle) {
     const ifExistWithCredential = await prisma.user.findUnique({
       where: {
@@ -248,8 +251,6 @@ const googleLogin = async (payload: googleLoginPayload) => {
         authProvider: AuthProvider.CREDENTIAL,
       },
     });
-
-    
 
     if (ifExistWithCredential) {
       if (
@@ -325,10 +326,107 @@ const googleLogin = async (payload: googleLoginPayload) => {
   };
 };
 
+const forgotPassword = async (payload: IForgotPasswordPayload) => {
+  const { email } = payload;
+
+  const isEmailExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!isEmailExist) {
+    throw new Error("Email Dose't Exists");
+  }
+
+  if (isEmailExist.isDeleted || isEmailExist.status !== "ACTIVE") {
+    throw new Error(`Email is ${isEmailExist.status}`);
+  }
+
+  if (!isEmailExist.emailVerified) {
+    throw new Error("This Email Address is not Verified");
+  }
+
+  if (!isEmailExist.password) {
+    throw new Error(
+      "Your Account is Sign up with google login, Please login using google",
+    );
+  }
+
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  const key = `forgot-password-otp:${isEmailExist.email}`;
+
+  await redisClient.set(key, otp, {
+    expiration: {
+      type: "EX",
+      value: 5 * 60,
+    },
+  });
+};
+
+const resetPassword = async (payload: IResetPasswordPayload) => {
+  const { email, otp, newPassword } = payload;
+
+  const isEmailExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!isEmailExist) {
+    throw new Error("Email Dose not Exists");
+  }
+
+  if (!isEmailExist.emailVerified) {
+    throw new Error("Your Email Not Verified");
+  }
+
+  if (isEmailExist.deletedAt || isEmailExist.status === "DELETED") {
+    throw new Error("Your Email is Deleted");
+  }
+
+  if (isEmailExist.status === "BLOCKED") {
+    throw new Error("Your Email is Blocked");
+  }
+
+  if (!isEmailExist.password) {
+    throw new Error("This account is registered using Google Sign-In");
+  }
+
+  const key = `forgot-password-otp:${isEmailExist.email}`;
+  const redisOtp = await redisClient.get(key);
+  if (!redisOtp) {
+    throw new Error("OTP has been expired");
+  }
+
+  if (redisOtp !== otp) {
+    throw new Error("OTP Not Match");
+  }
+
+  const hashNewPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  await prisma.user.update({
+    where: {
+      email: isEmailExist.email,
+    },
+    data: {
+      password: hashNewPassword,
+    },
+  });
+
+  await redisClient.del(key);
+
+};
+
 export const AuthService = {
   registerPatient,
   loginUser,
   getMe,
   refreshToken,
   googleLogin,
+  forgotPassword,
+  resetPassword,
 };
