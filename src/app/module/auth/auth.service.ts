@@ -19,6 +19,9 @@ import {
 import { googleClient } from "../../lib/google-auth";
 import crypto from "crypto";
 import { redisClient } from "../../lib/redis";
+import { transporter } from "../../lib/nodemailer";
+import ejs from "ejs";
+import path from "path";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
   const { name, password } = payload;
@@ -362,6 +365,22 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
       value: 5 * 60,
     },
   });
+
+  const forgotPassTemplatePath = path.join(
+    process.cwd(),
+    "/src/app/templates/forgot-password.ejs",
+  );
+
+  const html = await ejs.renderFile(forgotPassTemplatePath, {
+    otp,
+  });
+
+  await transporter.sendMail({
+    from: config.email_sender,
+    to: isEmailExist.email,
+    subject: "Forgot Password",
+    html: html,
+  });
 };
 
 const resetPassword = async (payload: IResetPasswordPayload) => {
@@ -419,6 +438,19 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 
   await redisClient.del(key);
 
+  const resetPassTemplatePath = path.join(
+    process.cwd(),
+    "/src/app/templates/reset-password.ejs",
+  );
+
+  const html = await ejs.renderFile(resetPassTemplatePath);
+
+  await transporter.sendMail({
+    from: config.email_sender,
+    to: isEmailExist.email,
+    subject: "Rest Password",
+    html,
+  });
 };
 
 export const AuthService = {
