@@ -1,6 +1,6 @@
 import z, { email, string } from "zod";
 
-const PatientRegistrationSchema = z.object({
+const RegistrationPatientSchema = z.object({
   name: z.string(),
   email: z.email(),
   password: z
@@ -19,7 +19,12 @@ const PatientRegistrationSchema = z.object({
     }),
 });
 
-const UserLoginSchema = z.object({
+const VerifyEmailSchema = z.object({
+  email:z.email(),
+  otp:z.string()
+})
+
+const LoginUserSchema = z.object({
   email: z.email(),
   password: z.string(),
 });
@@ -50,8 +55,9 @@ const ResetPasswordSchema = z.object({
 
 
 export const UserValidation = {
-  PatientRegistrationSchema,
-  UserLoginSchema,
+  RegistrationPatientSchema,
+  LoginUserSchema,
   ForgotPasswordSchema,
-  ResetPasswordSchema
+  ResetPasswordSchema,
+  VerifyEmailSchema,
 };

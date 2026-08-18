@@ -8,8 +8,21 @@ import z from "zod";
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-  console.log("Controller Payload", payload);
-  const result = await AuthService.registerPatient(payload);
+
+  await AuthService.registerPatient(payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Verified OTP Sent your email ,please verified",
+    data: null,
+  });
+});
+
+const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await AuthService.verifyEmail(payload);
 
   const { accessToken, refreshToken, user, patient } = result;
 
@@ -29,12 +42,12 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "Patient registered successfully",
+    message: "Email Verified Successfully",
     data: {
-      accessToken,
-      refreshToken,
       user,
       patient,
+      accessToken,
+      refreshToken,
     },
   });
 });
@@ -169,11 +182,11 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 
 export const AuthController = {
   registerPatient,
+  verifyEmail,
   loginUser,
   getMe,
   refreshToken,
   googleLogin,
   forgotPassword,
-  resetPassword
-  
+  resetPassword,
 };
