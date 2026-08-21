@@ -9,6 +9,7 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import { redisClient } from "./app/lib/redis";
 import crypto from "crypto";
 import { UserRoutes } from "./app/module/user/user.route";
+import { grantToken } from "./app/lib/bkash";
 const app: Application = express();
 
 app.use(
@@ -40,20 +41,14 @@ app.get("/", async (req: Request, res: Response) => {
 // testing route
 app.get("/test", async (req: Request, res: Response) => {
   try {
-    const otp = crypto.randomInt(100000, 1000000);
-    // const result = await redisClient.set("otp", "1234567", {
-    //   expiration: {
-    //     type: "EX",
-    //     value: 60,
-    //   },
-    // });
-    // console.log(result);
-    // console.log("Testing route");
+    
+
+      grantToken();
 
     res.status(200).json({
       success: true,
       message: "Get Successfully",
-      data: otp,
+      data: null,
     });
   } catch (error) {
     res.status(400).json({
