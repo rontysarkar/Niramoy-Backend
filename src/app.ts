@@ -9,7 +9,9 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import { redisClient } from "./app/lib/redis";
 import crypto from "crypto";
 import { UserRoutes } from "./app/module/user/user.route";
-import { grantToken } from "./app/lib/bkash";
+import { getBkashIdToken } from "./app/lib/bkash";
+import { AppointmentRoutes } from "./app/module/appointment/appointment.route";
+
 const app: Application = express();
 
 app.use(
@@ -29,6 +31,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/user", UserRoutes);
+app.use("/api/v1/appointment",AppointmentRoutes);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
@@ -43,7 +46,8 @@ app.get("/test", async (req: Request, res: Response) => {
   try {
     
 
-      grantToken();
+      const result = await getBkashIdToken();
+      console.log(result)
 
     res.status(200).json({
       success: true,
