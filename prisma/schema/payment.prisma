@@ -1,0 +1,30 @@
+model Payment {
+    id String @id @default(uuid())
+    status PaymentStatus @default(UNPAID)
+    amount Decimal @db.Decimal(10,2)
+    currency CurrencyList @default(BDT)
+    paymentGateWay PaymentGateWayList @default(bkash)
+    merchantInvoiceNumber String @unique
+
+    paymentId String? @unique
+    trxId String?
+    payerReference String?
+    paidAt String?
+
+    gatewayResponse Json?
+
+    refundTrxId String?
+    refundAmount Decimal? @db.Decimal(10,2)
+    refundReason String?
+    refundAt String?
+
+    appointmentId String @unique
+    appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade,onUpdate: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("payments")
+
+
+}
