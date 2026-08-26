@@ -18,7 +18,7 @@ enum Gender {
 }
 
 enum AuthProvider {
-  GOOGLE 
+  GOOGLE
   CREDENTIAL
 }
 
@@ -44,4 +44,10 @@ enum CurrencyList {
 
 enum PaymentGateWayList {
   bkash
+}
+
+enum DoctorVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

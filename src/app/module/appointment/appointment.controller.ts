@@ -1,16 +1,31 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { AppointmentService } from "./appointment.service";
 
 const bookAppointment = catchAsync(async (req: Request, res: Response) => {
-  const result = await AppointmentService.bookAppointment();
+  const payload = req.body;
+  const user = req.user!;
+  const result = await AppointmentService.bookAppointment(payload, user);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: "Book Appointment",
+    message: "Appointment Payment Initiated Successfully",
+    data: result,
+  });
+});
+
+const payAppointment = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const user = req.user!;
+
+  const result = await AppointmentService.payAppointment(payload, user);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Appointment Payment Initiated Successfully",
     data: result,
   });
 });
@@ -18,14 +33,28 @@ const bookAppointment = catchAsync(async (req: Request, res: Response) => {
 const bookAppointmentCallback = catchAsync(
   async (req: Request, res: Response) => {
     const query = req?.query;
-    const { redirectUrl, executePaymentResult } =
+    const { redirectUrl } =
       await AppointmentService.bookAppointmentCallback(query);
-    console.log("Executed Payment Controller : ", executePaymentResult);
+
     res.redirect(redirectUrl);
   },
 );
 
+const cancelAppointment = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await AppointmentService.cancelAppointment(payload);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Appointment Cancel Successfully",
+    data: result,
+  });
+});
+
 export const AppointmentController = {
   bookAppointment,
   bookAppointmentCallback,
+  payAppointment,
+  cancelAppointment,
 };
