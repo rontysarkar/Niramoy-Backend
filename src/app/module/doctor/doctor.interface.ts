@@ -1,0 +1,20 @@
+export interface IUser {
+  name: string;
+  email: string;
+}
+
+export interface IDoctor {
+  address?: string | null;
+  specialization: string;
+  licenseNumber: string;
+  qualifications: string;
+  experienceYears: string;
+  bio?: string | null;
+  consultationFee?: number | string | null;
+  contactNumber?: string | null;
+}
+
+export interface IDoctorWithUser {
+  user: IUser;
+  doctor: IDoctor;
+}
