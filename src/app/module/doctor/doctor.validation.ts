@@ -16,6 +16,18 @@ export const doctorValidationSchema = z.object({
   contactNumber: z.string().nullable().optional(),
 });
 
+
+export const applyAsDoctorVerifyEmailSchema = z.object({
+  email:z.email("Invalid Email Address"),
+  otp:z.string(),
+})
+
+export const approveDoctorPayloadSchema = z.object({
+  doctorId:z.string(),
+  verificationStatus:z.enum(["PENDING",'REJECTED',"APPROVED"]),
+  rejectReason:z.string().optional(),
+})
+
 export const doctorWithUserSchema = z.object({
   user: userValidationSchema,
   doctor: doctorValidationSchema,
