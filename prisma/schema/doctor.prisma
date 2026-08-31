@@ -16,7 +16,7 @@ model Doctor {
   consultationFee Decimal? @db.Decimal(10, 2)
   contactNumber   String?
 
-  verificationStatus DoctorVerificationStatus?
+  verificationStatus DoctorVerificationStatus @default(PENDING)
   rejectionReason    String?
   reviewedBy         String?
   reviewedAt         DateTime?

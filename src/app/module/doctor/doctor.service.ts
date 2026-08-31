@@ -14,6 +14,9 @@ import path from "path";
 import { transporter } from "../../lib/nodemailer";
 import { redisClient } from "../../lib/redis";
 import { IRequestUser } from "../auth/auth.interface";
+import { IQuery } from "../../interface";
+import { Prisma } from "../../../generated/prisma/client";
+import { buildQuery } from "../../utils/queryBuilder";
 
 const applyAsDoctor = async (
   payload: IDoctorWithUser,
@@ -198,13 +201,88 @@ const approveDoctor = async (
         verificationStatus === DoctorVerificationStatus.REJECTED
           ? rejectReason
           : null,
+      reviewedBy: reviewer?.userId,
+      reviewedAt: new Date(),
     },
   });
   return updatedDoctor;
+};
+
+const getAllDoctors = async (query: IQuery) => {
+  
+  const { limit, page, skip, sortBy, sortOrder, andConditions } = buildQuery(
+    query,
+    {
+      searchFields: ["name", "email", "specialization", "licenseNumber"],
+    },
+  );
+
+  if (query?.specialization) {
+    andConditions.push({
+      specialization: {
+        equals: query.specialization,
+        mode: "insensitive",
+      },
+    });
+  }
+
+  if (query?.licenseNumber) {
+    andConditions.push({
+      licenseNumber: {
+        equals: query.licenseNumber,
+        mode: "insensitive",
+      },
+    });
+  }
+
+  if (query?.verificationStatus) {
+    andConditions.push({
+      verificationStatus: query?.verificationStatus,
+    });
+  }
+
+  andConditions.push({
+    isDeleted: false,
+  });
+
+  const allDoctors = await prisma.doctor.findMany({
+    where: {
+      AND: andConditions,
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
+
+  const totalDoctorCount = await prisma.doctor.count({
+    where: {
+      AND: andConditions,
+    },
+  });
+
+  return {
+    data: allDoctors,
+    meta: {
+      page: page,
+      limit: limit,
+      total: totalDoctorCount,
+      totalPages: Math.ceil(totalDoctorCount / limit),
+    },
+  };
 };
 
 export const DoctorServices = {
   applyAsDoctor,
   applyAsDoctorEmailVerify,
   approveDoctor,
+  getAllDoctors,
 };

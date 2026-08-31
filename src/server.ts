@@ -1,5 +1,6 @@
 import app from "./app";
 import config from "./app/config";
+import { deletedUnverifiedDoctor } from "./app/lib/corn";
 import { transporter } from "./app/lib/nodemailer";
 import { prisma } from "./app/lib/prisma";
 import { redisClient } from "./app/lib/redis";
@@ -22,6 +23,7 @@ const main = async () => {
 		seedSuperAdmin();
 		seedTestAdmin();
 		seedTestDoctor();
+		deletedUnverifiedDoctor();
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
 		});
