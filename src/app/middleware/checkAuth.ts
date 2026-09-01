@@ -5,13 +5,9 @@ import config from "../config";
 import { prisma } from "../lib/prisma";
 import { catchAsync } from "../utils/catchAsync";
 import { jwtUtils } from "../utils/jwt";
+import { IRequestUser } from "../module/auth/auth.interface";
 
-export interface IRequestUser {
-	email: string;
-	name: string;
-	userId: string;
-	role: Role;
-}
+
 
 declare global {
 	namespace Express {

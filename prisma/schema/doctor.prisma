@@ -30,6 +30,7 @@ model Doctor {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  schedule  Schedule[]
 
   @@index([email], name: "idx_doctor_email")
   @@map("doctors")
