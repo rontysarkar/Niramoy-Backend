@@ -16,7 +16,8 @@ import { redisClient } from "../../lib/redis";
 import { IRequestUser } from "../auth/auth.interface";
 import { IQuery } from "../../interface";
 import { Prisma } from "../../../generated/prisma/client";
-import { buildQuery } from "../../utils/queryBuilder";
+import { buildQuery } from "../../utils/buildQuery";
+import { DoctorWhereInput } from "../../../generated/prisma/models";
 
 const applyAsDoctor = async (
   payload: IDoctorWithUser,
@@ -209,13 +210,30 @@ const approveDoctor = async (
 };
 
 const getAllDoctors = async (query: IQuery) => {
-  
-  const { limit, page, skip, sortBy, sortOrder, andConditions } = buildQuery(
-    query,
-    {
-      searchFields: ["name", "email", "specialization", "licenseNumber"],
-    },
-  );
+  const { limit, page, skip, sortBy, sortOrder } = buildQuery(query);
+
+  const andConditions: DoctorWhereInput[] = [];
+
+  if (query?.searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          name: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          specialization: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        { email: { contains: query.searchTerm, mode: "insensitive" } },
+        { licenseNumber: { contains: query.searchTerm, mode: "insensitive" } },
+      ],
+    });
+  }
 
   if (query?.specialization) {
     andConditions.push({

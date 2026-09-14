@@ -16,6 +16,7 @@ model Schedule {
     doctorId  String
     doctor  Doctor @relation(fields: [doctorId],references: [id],onDelete: Cascade,onUpdate: Cascade)
 
+    appointments Appointment[]
 
     @@unique([doctorId,startDateTime,endDateTime],name: "unique_schedule")
     @@map("schedules")
