@@ -160,7 +160,7 @@ const getMySchedules = async (query: IQuery, user: IRequestUser) => {
       page,
       limit,
       total,
-      totalPage: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit),
     },
   };
 };
@@ -211,7 +211,7 @@ const getAllSchedules = async (query: IQuery) => {
       limit,
       page,
       total,
-      totalPage: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit),
     },
   };
 };
