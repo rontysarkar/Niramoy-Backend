@@ -42,12 +42,56 @@ const bookAppointmentCallback = catchAsync(
 
 const cancelAppointment = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-
-  const result = await AppointmentService.cancelAppointment(payload);
+  const result = await AppointmentService.cancelAppointment(payload, req.user!);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Appointment Cancel Successfully",
+    data: result,
+  });
+});
+
+const getPatientAppointments = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const result = await AppointmentService.getPatientAppointments(req.query, user);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Patient Appointments Retrieved Successfully",
+    data: result,
+  });
+});
+
+const getDoctorAppointments = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user!;
+  const query = req.query;
+  const result = await AppointmentService.getDoctorAppointments(query, user);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Doctor Appointments Retrieved Successfully",
+    data: result,
+  });
+});
+
+const getAllAppointments = catchAsync(async (req: Request, res: Response) => {
+  const result = await AppointmentService.getAllAppointments(req.query);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "All Appointments Retrieved Successfully",
+    data: result,
+  });
+});
+
+const getAppointmentDetails = catchAsync(async (req: Request, res: Response) => {
+  const appointmentId = req?.params?.appointmentId;
+  const user = req.user!;
+  const result = await AppointmentService.getAppointmentDetails(appointmentId as string, user);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Appointment Details Retrieved Successfully",
     data: result,
   });
 });
@@ -57,4 +101,8 @@ export const AppointmentController = {
   bookAppointmentCallback,
   payAppointment,
   cancelAppointment,
+  getPatientAppointments,
+  getDoctorAppointments,
+  getAllAppointments,
+  getAppointmentDetails,
 };

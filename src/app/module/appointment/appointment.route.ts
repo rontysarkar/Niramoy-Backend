@@ -25,4 +25,28 @@ router.get(
   AppointmentController.bookAppointmentCallback,
 );
 
+router.get(
+  "/patient-appointments",
+  auth(Role.PATIENT),
+  AppointmentController.getPatientAppointments,
+);
+
+router.get(
+  "/doctor-appointments",
+  auth(Role.DOCTOR),
+  AppointmentController.getDoctorAppointments,
+);
+
+router.get(
+  "/all-appointments",
+  auth(Role.ADMIN,Role.SUPER_ADMIN),
+  AppointmentController.getAllAppointments,
+);
+
+router.get(
+  "/appointment/:appointmentId",
+  auth(Role.PATIENT,Role.DOCTOR,Role.ADMIN,Role.SUPER_ADMIN),
+  AppointmentController.getAppointmentDetails,
+);  
+
 export const AppointmentRoutes = router;
