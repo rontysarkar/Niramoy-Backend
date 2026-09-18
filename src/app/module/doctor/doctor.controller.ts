@@ -98,7 +98,6 @@ const updateDoctorProfile = catchAsync(
 
 const getAvailableDoctorByTodaysSchedule = catchAsync(
 	async (req: Request, res: Response) => {
-	
 
 		const { data, meta } = await DoctorServices.getAvailableDoctorByTodaysSchedule(
 			req.query
