@@ -8,186 +8,212 @@ import z from "zod";
 import config from "../../config";
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
+  const payload = req.body;
 
-	await AuthService.registerPatient(payload);
+  await AuthService.registerPatient(payload);
 
-	sendResponse(res, {
-		statusCode: httpStatus.CREATED,
-		success: true,
-		message: "Verified OTP Sent your email ,please verified",
-		data: null,
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Verified OTP Sent your email ,please verified",
+    data: null,
+  });
+});
+
+const resentVerifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  await AuthService.resentVerifyEmail(payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Verified OTP Sent your email ,please verified",
+    data: null,
+  });
 });
 
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
+  const payload = req.body;
 
-	const result = await AuthService.verifyEmail(payload);
+  const result = await AuthService.verifyEmail(payload);
 
-	const { accessToken, refreshToken, user, patient } = result;
+  const { accessToken, refreshToken, user, patient } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.CREATED,
-		success: true,
-		message: "Email Verified Successfully",
-		data: {
-			user,
-			patient,
-			accessToken,
-			refreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Email Verified Successfully",
+    data: {
+      user,
+      patient,
+      accessToken,
+      refreshToken,
+    },
+  });
 });
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.loginUser(payload);
-	const { accessToken, refreshToken } = result;
+  const payload = req.body;
+  const result = await AuthService.loginUser(payload);
+  const { accessToken, refreshToken } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? 'lax' : 'none',
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? 'lax' : 'none',
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "User logged in successfully",
-		data: {
-			accessToken,
-			refreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User logged in successfully",
+    data: {
+      accessToken,
+      refreshToken,
+    },
+  });
 });
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-	const user = req.user as unknown as IRequestUser;
+  const user = req.user as unknown as IRequestUser;
 
-	if (!user) {
-		throw new Error("User information is missing in the request");
-	}
+  if (!user) {
+    throw new Error("User information is missing in the request");
+  }
 
-	const result = await AuthService.getMe(user);
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "User profile fetched successfully",
-		data: result,
-	});
+  const result = await AuthService.getMe(user);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User profile fetched successfully",
+    data: result,
+  });
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-	if (!req.cookies.refreshToken) {
-		throw new Error("Refresh token is missing");
-	}
-	const result = await AuthService.refreshToken(req.cookies.refreshToken);
-	const { accessToken, refreshToken: newRefreshToken } = result;
+  if (!req.cookies.refreshToken) {
+    throw new Error("Refresh token is missing");
+  }
+  const result = await AuthService.refreshToken(req.cookies.refreshToken);
+  const { accessToken, refreshToken: newRefreshToken } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? 'lax' : 'none',
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", newRefreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? 'lax' : 'none',
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "New tokens generated successfully",
-		data: {
-			accessToken,
-			refreshToken: newRefreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: {
+      accessToken,
+      refreshToken: newRefreshToken,
+    },
+  });
 });
 
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.googleLogin(payload);
-	const { accessToken, refreshToken } = result;
+  const payload = req.body;
+  const result = await AuthService.googleLogin(payload);
+  const { accessToken, refreshToken } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? 'lax' : 'none',
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: config.node_env === "development" ? false : true,
-		sameSite: config.node_env === "development" ? 'lax' : 'none',
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: config.node_env === "development" ? false : true,
+    sameSite: config.node_env === "development" ? "lax" : "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "User logged in successfully",
-		data: {
-			accessToken,
-			refreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User logged in successfully",
+    data: {
+      accessToken,
+      refreshToken,
+    },
+  });
 });
 
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.forgotPassword(payload);
+  const payload = req.body;
+  const result = await AuthService.forgotPassword(payload);
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "otp Send your email please check",
-		data: {},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "otp Send your email please check",
+    data: {},
+  });
 });
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.resetPassword(payload);
+  const payload = req.body;
+  const result = await AuthService.resetPassword(payload);
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Password Reset Successfully",
-		data: {},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password Reset Successfully",
+    data: {},
+  });
+});
+
+const logout = catchAsync(async (req: Request, res: Response) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User logged out successfully",
+    data: null,
+  });
 });
 
 export const AuthController = {
-	registerPatient,
-	verifyEmail,
-	loginUser,
-	getMe,
-	refreshToken,
-	googleLogin,
-	forgotPassword,
-	resetPassword,
+  registerPatient,
+  verifyEmail,
+  resentVerifyEmail,
+  loginUser,
+  getMe,
+  refreshToken,
+  googleLogin,
+  forgotPassword,
+  resetPassword,
+  logout,
 };

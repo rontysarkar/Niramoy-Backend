@@ -16,6 +16,10 @@ export interface IVerifyEmailPayload {
 	otp: string;
 }
 
+export interface IResendVerifyEmailPayload {
+	email: string;
+}
+
 export interface IRequestUser {
 	userId: string;
 	email: string;

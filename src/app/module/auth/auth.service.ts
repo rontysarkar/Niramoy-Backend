@@ -14,6 +14,7 @@ import type {
   ILoginUserPayload,
   IRegisterPatientPayload,
   IRequestUser,
+  IResendVerifyEmailPayload,
   IResetPasswordPayload,
   IVerifyEmailPayload,
 } from "./auth.interface";
@@ -35,7 +36,8 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
   });
 
   if (isUserExists) {
-    throw new Error("User with this email already exists");
+    // throw new Error("User with this email already exists");
+    throw new AppError(httpStatus.CONFLICT, "User with this email already exists");
   }
 
   const hashedPassword = await bcrypt.hash(password, 8);
@@ -64,7 +66,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
     {
       expiration: {
         type: "EX",
-        value: 5 * 60,
+        value: 15 * 60,
       },
     },
   );
@@ -168,6 +170,45 @@ const verifyEmail = async (payload: IVerifyEmailPayload) => {
     accessToken,
     refreshToken,
   };
+};
+
+const resentVerifyEmail = async (payload: IResendVerifyEmailPayload) => {
+
+  const { email } = payload;
+  const verifyEmailPayloadKey = `verify-email-payload:${email}`;
+
+  const redisPayload = await redisClient.get(verifyEmailPayloadKey);
+  if (!redisPayload) {
+    throw new Error("info dose not exists in redis");
+  }
+
+  
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  const verifyEmailOtpKey = `verify-email-otp:${email}`;
+
+  await redisClient.set(verifyEmailOtpKey, otp, {
+    expiration: {
+      type: "EX",
+      value: 60 * 5,
+    },
+  });
+
+  const verifyEmailTemplatePath = path.join(
+    process.cwd(),
+    "/src/app/templates/verify-email.ejs",
+  );
+  const html = await ejs.renderFile(verifyEmailTemplatePath, {
+    otp,
+  });
+
+  await transporter.sendMail({
+    from: config.email_sender,
+    to: email,
+    subject: "Email Verification OTP",
+    html,
+  });
+
+
 };
 
 const loginUser = async (payload: ILoginUserPayload) => {
@@ -561,6 +602,7 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 export const AuthService = {
   registerPatient,
   verifyEmail,
+  resentVerifyEmail,
   loginUser,
   getMe,
   refreshToken,
@@ -568,4 +610,4 @@ export const AuthService = {
   forgotPassword,
   resetPassword,
 };
-//
+
